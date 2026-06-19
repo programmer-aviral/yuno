@@ -1,0 +1,1271 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YONO Sahayak - Agentic AI Banking OS</title>
+    <style>
+        :root {
+            --bg-primary: #030712;
+            --bg-secondary: #0b1528;
+            --bg-card: rgba(15, 23, 42, 0.65);
+            --border-color: rgba(255, 255, 255, 0.08);
+            --text-primary: #f3f4f6;
+            --text-secondary: #9ca3af;
+            --accent-sbi: #0063ae;
+            --accent-glow: #3b82f6;
+            --accent-success: #10b981;
+            --accent-warning: #f59e0b;
+            --accent-gradient: linear-gradient(135deg, #0063ae 0%, #3b82f6 50%, #d946ef 100%);
+            --glass-blur: blur(16px);
+            --font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        .light {
+            --bg-primary: #f8fafc;
+            --bg-secondary: #f1f5f9;
+            --bg-card: rgba(255, 255, 255, 0.75);
+            --border-color: rgba(0, 0, 0, 0.06);
+            --text-primary: #0f172a;
+            --text-secondary: #475569;
+            --accent-sbi: #0063ae;
+            --accent-glow: #2563eb;
+            --accent-success: #059669;
+            --accent-warning: #d97706;
+            --accent-gradient: linear-gradient(135deg, #005293 0%, #2563eb 50%, #c026d3 100%);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+        }
+
+        body {
+            font-family: var(--font-family);
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+
+        /* Ambient Background Mesh */
+        .ambient-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: -1;
+            overflow: hidden;
+            pointer-events: none;
+        }
+        .bg-glow-1 {
+            position: absolute;
+            top: -10%;
+            left: -10%;
+            width: 60vw;
+            height: 60vh;
+            background: radial-gradient(circle, rgba(0,99,174,0.15) 0%, rgba(0,0,0,0) 70%);
+            border-radius: 50%;
+            animation: floatGlow 20s infinite alternate;
+        }
+        .bg-glow-2 {
+            position: absolute;
+            bottom: -10%;
+            right: -10%;
+            width: 70vw;
+            height: 70vh;
+            background: radial-gradient(circle, rgba(217,70,239,0.1) 0%, rgba(0,0,0,0) 70%);
+            border-radius: 50%;
+            animation: floatGlow 25s infinite alternate-reverse;
+        }
+        @keyframes floatGlow {
+            0% { transform: translate(0, 0) scale(1); }
+            100% { transform: translate(5%, 5%) scale(1.1); }
+        }
+
+        /* Glassmorphism Styles */
+        .glass-panel {
+            background: var(--bg-card);
+            backdrop-filter: var(--glass-blur);
+            -webkit-backdrop-filter: var(--glass-blur);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2);
+        }
+
+        .glass-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+        }
+        .glass-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: var(--accent-glow);
+            transform: translateY(-1px);
+        }
+        .glass-btn.active {
+            background: var(--accent-sbi);
+            color: white;
+            border-color: transparent;
+        }
+
+        /* Main Workspace Frame Layout */
+        .app-container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar Controls */
+        .sidebar {
+            width: 280px;
+            border-right: 1px solid var(--border-color);
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+            background: rgba(11, 21, 40, 0.4);
+            backdrop-filter: blur(10px);
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+            z-index: 100;
+        }
+
+        .brand-section {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .brand-title {
+            font-size: 22px;
+            font-weight: 800;
+            background: linear-gradient(90deg, #ffffff, #9ca3af);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -0.5px;
+        }
+        .light .brand-title {
+            background: linear-gradient(90deg, #0f172a, #475569);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .brand-subtitle {
+            font-size: 11px;
+            color: var(--accent-glow);
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .team-badge {
+            font-size: 11px;
+            background: rgba(59, 130, 246, 0.1);
+            color: var(--accent-glow);
+            padding: 4px 8px;
+            border-radius: 4px;
+            width: fit-content;
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            font-weight: bold;
+        }
+
+        .nav-menu {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 12px;
+            border-radius: 8px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+        }
+        .nav-item:hover, .nav-item.active {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-primary);
+        }
+        .nav-item.active {
+            border-left: 3px solid var(--accent-sbi);
+            background: rgba(0, 99, 174, 0.1);
+            font-weight: 600;
+        }
+
+        .system-status {
+            margin-top: auto;
+            padding: 12px;
+            border-radius: 8px;
+            background: rgba(16, 185, 129, 0.05);
+            border: 1px solid rgba(16, 185, 129, 0.1);
+        }
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background-color: var(--accent-success);
+            border-radius: 50%;
+            display: inline-block;
+            box-shadow: 0 0 8px var(--accent-success);
+            animation: pulse 2s infinite;
+        }
+
+        /* Workspace Core View Frame */
+        .workspace-content {
+            margin-left: 280px;
+            flex-grow: 1;
+            padding: 40px;
+            max-width: calc(100% - 280px);
+        }
+
+        /* Global Status Header Bar */
+        .global-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 32px;
+        }
+        .header-stats {
+            display: flex;
+            gap: 24px;
+        }
+        .header-stat-pill {
+            display: flex;
+            flex-direction: column;
+        }
+        .header-stat-label {
+            font-size: 11px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .header-stat-value {
+            font-size: 14px;
+            font-weight: 700;
+        }
+
+        /* View Section Structure */
+        .view-section {
+            display: none;
+            animation: fadeIn 0.4s ease-out forwards;
+        }
+        .view-section.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Grid Configuration Tools */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(12, minmax(0, 1fr));
+            gap: 24px;
+        }
+        .col-12 { grid-column: span 12 / span 12; }
+        .col-8 { grid-column: span 8 / span 8; }
+        .col-6 { grid-column: span 6 / span 6; }
+        .col-4 { grid-column: span 4 / span 4; }
+        .col-3 { grid-column: span 3 / span 3; }
+
+        /* Typography Master Standards */
+        h1, h2, h3, h4 {
+            font-weight: 700;
+            letter-spacing: -0.02em;
+        }
+        .gradient-text {
+            background: var(--accent-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* --- SCREEN 1: HERO LANDING PAGE --- */
+        .hero-layout {
+            display: flex;
+            align-items: center;
+            min-height: 75vh;
+            gap: 40px;
+        }
+        .hero-text-block {
+            flex: 1;
+        }
+        .hero-headline {
+            font-size: 54px;
+            line-height: 1.1;
+            margin-bottom: 16px;
+            font-weight: 800;
+        }
+        .hero-subheadline {
+            font-size: 18px;
+            color: var(--text-secondary);
+            margin-bottom: 32px;
+            line-height: 1.6;
+        }
+        .hero-showcase {
+            flex: 1;
+            position: relative;
+            height: 450px;
+        }
+        .floating-card {
+            position: absolute;
+            width: 280px;
+            padding: 20px;
+            animation: floatCard 6s infinite ease-in-out;
+        }
+        .card-f1 { top: 10%; left: 10%; animation-delay: 0s; }
+        .card-f2 { bottom: 15%; right: 5%; animation-delay: 2s; }
+        .card-f3 { top: 45%; left: 40%; animation-delay: 4s; }
+
+        @keyframes floatCard {
+            0%, 100% { transform: translateY(0) scale(1); box-shadow: 0 8px 32px 0 rgba(0,0,0,0.2); }
+            50% { transform: translateY(-12px) scale(1.02); box-shadow: 0 20px 40px 0 rgba(0,63,174,0.15); }
+        }
+
+        /* --- SCREEN 2: MISSION CONTROL DASHBOARD --- */
+        .panel-padding { padding: 24px; }
+        .metric-value { font-size: 32px; font-weight: 700; margin: 8px 0 4px 0; }
+        .metric-trend { font-size: 12px; font-weight: 600; display: flex; align-items: center; gap: 4px; }
+        .trend-up { color: var(--accent-success); }
+        .trend-down { color: #ef4444; }
+
+        /* --- SCREEN 3: AGENT COLLABORATION NETWORK (HERO FEATURE) --- */
+        .network-canvas-container {
+            position: relative;
+            width: 100%;
+            height: 480px;
+            background: rgba(2, 6, 23, 0.4);
+            border-radius: 16px;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+        }
+        .network-node {
+            position: absolute;
+            width: 150px;
+            padding: 16px;
+            text-align: center;
+            border-radius: 12px;
+            font-weight: bold;
+            z-index: 10;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+        }
+        /* Layout nodes strictly aligned with the requested flowchart architecture */
+        .node-life { top: 40px; left: 10%; border: 1px solid #a855f7; background: rgba(168, 85, 247, 0.1); }
+        .node-decision { top: 40px; left: 50%; transform: translateX(-50%); border: 1px solid #3b82f6; background: rgba(59, 130, 246, 0.1); }
+        .node-trust { top: 220px; left: 50%; transform: translateX(-50%); border: 1px solid #10b981; background: rgba(16, 185, 129, 0.1); }
+        .node-adoption { top: 380px; left: 50%; transform: translateX(-50%); border: 1px solid #f59e0b; background: rgba(245, 158, 114, 0.1); }
+        .node-customer { top: 380px; right: 10%; border: 1px solid #ec4899; background: rgba(236, 72, 153, 0.1); }
+
+        .live-feed-panel {
+            height: 380px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            padding-right: 8px;
+        }
+        .feed-entry {
+            padding: 8px;
+            border-radius: 6px;
+            background: rgba(255,255,255,0.02);
+            border-left: 3px solid var(--accent-glow);
+            animation: slideInLeft 0.3s ease-out;
+        }
+        @keyframes slideInLeft {
+            from { transform: translateX(-10px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        /* --- SCREEN 4: LIFE EVENT INTELLIGENCE ENGINE --- */
+        .timeline-scroll-container {
+            display: flex;
+            gap: 24px;
+            overflow-x: auto;
+            padding: 16px 4px;
+            scroll-snap-type: x mandatory;
+        }
+        .timeline-node-card {
+            min-width: 280px;
+            flex: 1;
+            scroll-snap-align: start;
+            position: relative;
+        }
+        .timeline-connector-line {
+            height: 4px;
+            background: var(--accent-sbi);
+            position: absolute;
+            top: 40px;
+            left: 280px;
+            width: 24px;
+            z-index: 1;
+        }
+
+        /* --- SCREEN 5: VOICE BANKING BHARAT --- */
+        .voice-hub-layout {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+            text-align: center;
+        }
+        .mic-sphere {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #0063ae 0%, #3b82f6 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7);
+            animation: pulseMic 2s infinite;
+        }
+        @keyframes pulseMic {
+            0% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7); }
+            70% { box-shadow: 0 0 0 24px rgba(59, 130, 246, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); }
+        }
+        .voice-wave-container {
+            width: 100%;
+            height: 100px;
+            margin-top: 32px;
+        }
+
+        /* --- HARDWARE/NATIVE CSS CHARTS --- */
+        .bar-chart-flex {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            height: 200px;
+            padding-top: 24px;
+        }
+        .chart-bar-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            flex: 1;
+            gap: 8px;
+        }
+        .chart-bar-pillar {
+            width: 70%;
+            max-width: 40px;
+            background: linear-gradient(180deg, var(--accent-glow) 0%, rgba(59,130,246,0.2) 100%);
+            border-radius: 6px 6px 0 0;
+            position: relative;
+            transform-origin: bottom;
+            animation: growBar 1s ease-out forwards;
+        }
+        @keyframes growBar {
+            from { transform: scaleY(0); }
+            to { transform: scaleY(1); }
+        }
+        .chart-bar-pillar:hover::after {
+            content: attr(data-value);
+            position: absolute;
+            top: -28px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 10px;
+            white-space: nowrap;
+            z-index: 10;
+        }
+
+        /* UI Polish Details */
+        .progress-ring-box {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        .circle-svg {
+            transform: rotate(-90deg);
+        }
+        .circle-bg {
+            fill: none;
+            stroke: rgba(255,255,255,0.05);
+            stroke-width: 4;
+        }
+        .circle-progress {
+            fill: none;
+            stroke: var(--accent-glow);
+            stroke-width: 4;
+            stroke-linecap: round;
+            transition: stroke-dashoffset 1s ease-in-out;
+        }
+
+        /* Quick Utilities */
+        .flex-between { display: flex; justify-content: space-between; align-items: center; }
+        .text-muted { color: var(--text-secondary); font-size: 13px; }
+        .m-t-16 { margin-top: 16px; }
+        .gap-12 { display: flex; gap: 12px; }
+        .badge-pill { padding: 4px 8px; border-radius: 9999px; font-size: 11px; font-weight: 600; }
+        .badge-success { background: rgba(16,185,129,0.15); color: var(--accent-success); }
+        .badge-warning { background: rgba(245,158,11,0.15); color: var(--accent-warning); }
+
+        /* Responsive Breakpoints */
+        @media(max-width: 1024px) {
+            .sidebar { width: 80px; padding: 16px 8px; align-items: center; }
+            .brand-subtitle, .nav-item span, .team-badge, .system-status { display: none; }
+            .workspace-content { margin-left: 80px; max-width: calc(100% - 80px); padding: 24px; }
+            .col-6, .col-4, .col-3 { grid-column: span 12 / span 12; }
+            .col-8 { grid-column: span 12 / span 12; }
+        }
+        @media(max-width: 768px) {
+            .hero-layout { flex-direction: column; text-align: center; }
+            .hero-headline { font-size: 36px; }
+            .floating-card { position: relative; width: 100%; top: auto; left: auto; bottom: auto; right: auto; margin-bottom: 16px; }
+            .hero-showcase { height: auto; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="ambient-bg">
+        <div class="bg-glow-1"></div>
+        <div class="bg-glow-2"></div>
+    </div>
+
+    <div class="app-container">
+        <aside class="sidebar">
+            <div class="brand-section">
+                <div class="brand-title">YONO Sahayak</div>
+                <div class="brand-subtitle">Agentic AI Banking OS</div>
+                <div class="team-badge" style="margin-top: 4px;">TheRealAviral</div>
+            </div>
+
+            <nav class="nav-menu">
+                <a class="nav-item active" onclick="switchView('hero-landing', this)">
+                    <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+                    <span>Hero Landing Page</span>
+                </a>
+                <a class="nav-item" onclick="switchView('mission-control', this)">
+                    <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 002 2h2a2 2 0 002-2z"/></svg>
+                    <span>AI Mission Control</span>
+                </a>
+                <a class="nav-item" onclick="switchView('agent-network', this)">
+                    <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+                    <span>Agent Collaboration</span>
+                </a>
+                <a class="nav-item" onclick="switchView('life-event', this)">
+                    <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    <span>Life Event Engine</span>
+                </a>
+                <a class="nav-item" onclick="switchView('voice-banking', this)">
+                    <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"/></svg>
+                    <span>Voice Banking Bharat</span>
+                </a>
+                <a class="nav-item" onclick="switchView('customer-acquisition', this)">
+                    <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z"/><path d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z"/></svg>
+                    <span>Acquisition Pipeline</span>
+                </a>
+                <a class="nav-item" onclick="switchView('digital-adoption', this)">
+                    <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                    <span>Adoption Engine</span>
+                </a>
+                <a class="nav-item" onclick="switchView('financial-twin', this)">
+                    <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 7v10c0 2.21 3.58 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.58 4 8 4s8-1.79 8-4M4 7c0-2.21 3.58-4 8-4s8 1.79 8 4m0 5c0 2.21-3.58 4-8 4s-8-1.79-8-4"/></svg>
+                    <span>Financial Health Twin</span>
+                </a>
+                <a class="nav-item" onclick="switchView('explainable-ai', this)">
+                    <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
+                    <span>Explainable AI Center</span>
+                </a>
+                <a class="nav-item" onclick="switchView('trust-compliance', this)">
+                    <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+                    <span>Trust & Compliance</span>
+                </a>
+                <a class="nav-item" onclick="switchView('executive-dashboard', this)">
+                    <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    <span>SBI Executive Board</span>
+                </a>
+                <a class="nav-item" onclick="switchView('future-vision', this)">
+                    <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                    <span>Future of Banking</span>
+                </a>
+            </nav>
+
+            <div style="display: flex; gap: 8px; margin-top: 16px;">
+                <button class="glass-btn" style="flex: 1; padding: 6px;" onclick="setTheme('dark')">Dark</button>
+                <button class="glass-btn" style="flex: 1; padding: 6px;" onclick="setTheme('light')">Light</button>
+            </div>
+
+            <div class="system-status">
+                <div class="flex-between">
+                    <span style="font-size: 11px; font-weight:600;">AGENT OS MESH</span>
+                    <span class="status-dot"></span>
+                </div>
+                <div style="font-size: 10px; color: var(--text-secondary); margin-top: 4px;">SECURE NODE: ACTIVE</div>
+            </div>
+        </aside>
+
+        <main class="workspace-content">
+            <header class="global-header">
+                <div>
+                    <h4 style="font-size: 14px; font-weight: 500;" id="view-title-breadcrumb">Workspace Overview</h4>
+                </div>
+                <div class="header-stats">
+                    <div class="header-stat-pill">
+                        <span class="header-stat-label">System Performance</span>
+                        <span class="header-stat-value" style="color: var(--accent-success);">99.94%</span>
+                    </div>
+                    <div class="header-stat-pill">
+                        <span class="header-stat-label">Active Agents</span>
+                        <span class="header-stat-value">8 Linked Mesh</span>
+                    </div>
+                    <div class="header-stat-pill">
+                        <span class="header-stat-label">Scale Capacity</span>
+                        <span class="header-stat-value">500M+ Core</span>
+                    </div>
+                </div>
+            </header>
+
+            <section id="hero-landing" class="view-section active">
+                <div class="hero-layout">
+                    <div class="hero-text-block">
+                        <h1 class="hero-headline">Your AI Banking Companion. <br><span class="gradient-text">Acquire. Engage. Grow.</span></h1>
+                        <p class="hero-subheadline">Introducing YONO Sahayak: India's first fully autonomous Agentic Banking Operating System built explicitly for SBI's multi-million citizen scale. Seamlessly capturing user lifecycle shifts, local languages, and complex digital financial advisory workflows with provable auditability.</p>
+                        <div class="gap-12">
+                            <button class="glass-btn active" onclick="document.querySelector('[onclick*=\'mission-control\']').click()">Launch Mission Control</button>
+                            <button class="glass-btn" onclick="alert('Simulation Framework Running. Explore via the sidebar nodes.')">Explore Ecosystem Architecture</button>
+                        </div>
+                    </div>
+                    <div class="hero-showcase">
+                        <div class="glass-panel floating-card card-f1">
+                            <h4 style="color: var(--accent-glow);">Autonomous Onboarding</h4>
+                            <p class="text-muted m-t-16">Acquisition Agent successfully parsed village geographic layout. Local verification matched cleanly via Jan Dhan registries.</p>
+                        </div>
+                        <div class="glass-panel floating-card card-f2">
+                            <h4 style="color: var(--accent-success);">Hyper-Personalization</h4>
+                            <p class="text-muted m-t-16">Life Event Agent isolated structural salary milestone transformation. Cross-sell engine prepared pre-approved vehicle asset allocation.</p>
+                        </div>
+                        <div class="glass-panel floating-card card-f3">
+                            <h4 style="color: var(--accent-warning);">Active Optimization</h4>
+                            <p class="text-muted m-t-16">System processing digital adoption parameters. Local vernacular voice agent active over Bharat-Mesh cluster nodes.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="mission-control" class="view-section">
+                <div class="dashboard-grid">
+                    <div class="glass-panel panel-padding col-4">
+                        <span class="text-muted">Financial Health Score</span>
+                        <div class="metric-value">845<span style="font-size:14px; color:var(--text-secondary);">/1000</span></div>
+                        <span class="metric-trend trend-up">Optimal Range Active</span>
+                    </div>
+                    <div class="glass-panel panel-padding col-4">
+                        <span class="text-muted">Active Goals Automated</span>
+                        <div class="metric-value">6 / 6</div>
+                        <span class="metric-trend trend-up">All parameters matching timeline</span>
+                    </div>
+                    <div class="glass-panel panel-padding col-4">
+                        <span class="text-muted">Real-Time Risk Profile</span>
+                        <div class="metric-value" style="color: var(--accent-success);">Secure</div>
+                        <span class="metric-trend trend-up">Zero anomalies flag detected</span>
+                    </div>
+
+                    <div class="glass-panel panel-padding col-8">
+                        <h3 style="margin-bottom: 16px;">Agentic AI Command Center</h3>
+                        <div style="display:flex; flex-direction:column; gap:12px;">
+                            <div class="flex-between" style="padding:10px; background:rgba(255,255,255,0.02); border-radius:8px;">
+                                <div><strong>Acquisition Agent</strong> <span class="text-muted">| Ingesting localized lead models</span></div>
+                                <div class="gap-12"><span class="badge-pill badge-success">Confidence: 98%</span><strong>ACTIVE</strong></div>
+                            </div>
+                            <div class="flex-between" style="padding:10px; background:rgba(255,255,255,0.02); border-radius:8px;">
+                                <div><strong>Engagement Agent</strong> <span class="text-muted">| Matching transactional frequency vectors</span></div>
+                                <div class="gap-12"><span class="badge-pill badge-success">Confidence: 96%</span><strong>IDLE</strong></div>
+                            </div>
+                            <div class="flex-between" style="padding:10px; background:rgba(255,255,255,0.02); border-radius:8px;">
+                                <div><strong>Adoption Agent</strong> <span class="text-muted">| Moving regional cohorts to digital UPI channels</span></div>
+                                <div class="gap-12"><span class="badge-pill badge-success">Confidence: 94%</span><strong>ACTIVE</strong></div>
+                            </div>
+                            <div class="flex-between" style="padding:10px; background:rgba(255,255,255,0.02); border-radius:8px;">
+                                <div><strong>Life Event Agent</strong> <span class="text-muted">| Monitoring dynamic corporate deposit anomalies</span></div>
+                                <div class="gap-12"><span class="badge-pill badge-success">Confidence: 99%</span><strong>ACTIVE</strong></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="glass-panel panel-padding col-4">
+                        <h3 style="margin-bottom:16px;">Live AI Kernel Feed</h3>
+                        <div class="live-feed-panel" id="kernel-live-feed-target">
+                            </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="agent-network" class="view-section">
+                <div class="dashboard-grid">
+                    <div class="col-12">
+                        <h2 style="margin-bottom: 8px;">Agent Collaboration &amp; Consensus Fabric</h2>
+                        <p class="text-muted" style="margin-bottom: 24px;">Observe real-time telemetry passing between localized autonomous agents to process user triggers without corporate manual oversight.</p>
+                    </div>
+                    <div class="col-8">
+                        <div class="network-canvas-container">
+                            <div class="network-node node-life" id="node-life-evt">Life Event Agent</div>
+                            <div class="network-node node-decision" id="node-decision-eng">Decision Engine</div>
+                            <div class="network-node node-trust" id="node-trust-agt">Trust Agent</div>
+                            <div class="network-node node-adoption" id="node-adopt-agt">Adoption Agent</div>
+                            <div class="network-node node-customer" id="node-cust-endpoint">Customer (Bharat Hub)</div>
+                            
+                            <canvas id="network-pipeline-canvas" style="position:absolute; top:0; left:0; width:100%; height:100%; pointer-events:none;"></canvas>
+                        </div>
+                    </div>
+                    <div class="glass-panel panel-padding col-4">
+                        <h3>Consensus Insights</h3>
+                        <p class="text-muted m-t-16">The system runs continuous multi-agent validation loops to ensure no cross-selling occurs without absolute risk verification and explicit compliance approval.</p>
+                        <div class="m-t-16" style="padding:12px; background:rgba(0,99,174,0.05); border:1px solid rgba(0,99,174,0.2); border-radius:8px;">
+                            <strong>Latest State Action:</strong>
+                            <div style="font-size:12px; font-family:monospace; margin-top:8px;" id="network-live-telemetry-status">Awaiting trigger broadcast state loop...</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="life-event" class="view-section">
+                <div class="dashboard-grid">
+                    <div class="col-12">
+                        <h2 style="margin-bottom: 8px;">Life Event Intelligence Engine</h2>
+                        <p class="text-muted" style="margin-bottom: 24px;">Transitioning traditional static customer records into a dynamic, event-driven timeline model.</p>
+                        
+                        <div class="timeline-scroll-container">
+                            <div class="glass-panel panel-padding timeline-node-card">
+                                <span class="badge-pill badge-success">Completed</span>
+                                <h4 class="m-t-16">First Salary Ingestion</h4>
+                                <p class="text-muted m-t-16">Parsed corporate salary account parameters. Automatically initiated custom zero-balance benefits alignment tracking.</p>
+                                <div class="timeline-connector-line"></div>
+                            </div>
+                            <div class="glass-panel panel-padding timeline-node-card">
+                                <span class="badge-pill badge-success">Completed</span>
+                                <h4 class="m-t-16">Marriage Ecosystem Shift</h4>
+                                <p class="text-muted m-t-16">Detected co-applicant relational link setup. Suggested optimized family multi-coverage secure insurance tier alignment structures.</p>
+                                <div class="timeline-connector-line"></div>
+                            </div>
+                            <div class="glass-panel panel-padding timeline-node-card">
+                                <span class="badge-pill badge-success">Completed</span>
+                                <h4 class="m-t-16">Home Purchase Ingestion</h4>
+                                <p class="text-muted m-t-16">Matched developer processing escrow parameters directly to local SBI home capital asset financing lines.</p>
+                                <div class="timeline-connector-line"></div>
+                            </div>
+                            <div class="glass-panel panel-padding timeline-node-card" style="border: 1px solid var(--accent-glow);">
+                                <span class="badge-pill badge-warning" style="background:rgba(59,130,246,0.2); color:var(--accent-glow);">Active Action</span>
+                                <h4 class="m-t-16">EMI Closure Detection</h4>
+                                <p class="text-muted m-t-16">Last structural premium installment fully registered. System routing liberated capital surplus liquidity lines directly into active investment structures.</p>
+                                <div class="timeline-connector-line"></div>
+                            </div>
+                            <div class="glass-panel panel-padding timeline-node-card">
+                                <span class="text-muted" style="font-size:11px; font-weight:bold; text-transform:uppercase;">Future State Projection</span>
+                                <h4 class="m-t-16" style="color:var(--text-secondary);">Child Education Trust</h4>
+                                <p class="text-muted m-t-16">Predictive trend tracking models show expected higher capital alignment requirements coming in 36 calendar months.</p>
+                                <div class="timeline-connector-line"></div>
+                            </div>
+                            <div class="glass-panel panel-padding timeline-node-card">
+                                <span class="text-muted" style="font-size:11px; font-weight:bold; text-transform:uppercase;">Future State Projection</span>
+                                <h4 class="m-t-16" style="color:var(--text-secondary);">Retirement Vault Matrix</h4>
+                                <p class="text-muted m-t-16">Long-range pension and localized social health support framework mappings ready for deployment strategy options.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="voice-banking" class="view-section">
+                <div class="dashboard-grid">
+                    <div class="glass-panel panel-padding col-12">
+                        <div class="voice-hub-layout">
+                            <h2>Voice Banking Bharat Hub</h2>
+                            <p class="text-muted m-t-16" style="max-width: 600px; margin-bottom:32px;">Deploying true conversational financial agent access maps supporting multi-dialect interactions across regional operational territories instantly.</p>
+                            
+                            <div class="gap-12" style="margin-bottom: 32px;">
+                                <button class="glass-btn active">Hindi</button>
+                                <button class="glass-btn">English</button>
+                                <button class="glass-btn">Marathi</button>
+                                <button class="glass-btn">Tamil</button>
+                                <button class="glass-btn">Bengali</button>
+                            </div>
+
+                            <div class="mic-sphere">
+                                <svg width="32" height="32" fill="none" stroke="white" stroke-width="2" viewBox="0 0 24 24"><path d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"/></svg>
+                            </div>
+
+                            <div class="voice-wave-container">
+                                <canvas id="voice-oscilloscope-canvas" style="width:100%; height:100%;"></canvas>
+                            </div>
+
+                            <p class="text-muted" style="font-family: monospace; margin-top:16px;">"खाता बंद होने के बाद मेरा बचा हुआ पैसा सुकन्या समृद्धि योजना में ट्रांसफर कर दो"</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="customer-acquisition" class="view-section">
+                <div class="dashboard-grid">
+                    <div class="glass-panel panel-padding col-8">
+                        <h3>Demographic Discovery Routing Pipeline</h3>
+                        <p class="text-muted m-t-16">Agent loops identifying local unbanked clusters using geo-demographic crop patterns and village square commercial transaction velocity markers.</p>
+                        
+                        <div class="bar-chart-flex">
+                            <div class="chart-bar-wrapper">
+                                <div class="chart-bar-pillar" style="height: 45%;" data-value="45,230 New Leads"></div>
+                                <span class="text-muted" style="font-size:11px;">Tier 2 Rural</span>
+                            </div>
+                            <div class="chart-bar-wrapper">
+                                <div class="chart-bar-pillar" style="height: 75%;" data-value="75,110 New Leads"></div>
+                                <span class="text-muted" style="font-size:11px;">Semi-Urban Hubs</span>
+                            </div>
+                            <div class="chart-bar-wrapper">
+                                <div class="chart-bar-pillar" style="height: 90%;" data-value="92,400 New Leads"></div>
+                                <span class="text-muted" style="font-size:11px;">Agricultural Co-ops</span>
+                            </div>
+                            <div class="chart-bar-wrapper">
+                                <div class="chart-bar-pillar" style="height: 30%;" data-value="31,800 New Leads"></div>
+                                <span class="text-muted" style="font-size:11px;">MSME Clusters</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="glass-panel panel-padding col-4">
+                        <h3>Acquisition Analytics</h3>
+                        <div class="m-t-16">
+                            <span class="text-muted">Autonomous Conversion Rate</span>
+                            <div style="font-size:24px; font-weight:700; margin-top:4px;">74.2%</div>
+                        </div>
+                        <div class="m-t-16">
+                            <span class="text-muted">Avg. Onboarding Cost per Unit</span>
+                            <div style="font-size:24px; font-weight:700; margin-top:4px; color:var(--accent-success);">₹12.40 <span style="font-size:12px; color:var(--text-secondary); font-weight:normal;">(down 88%)</span></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="digital-adoption" class="view-section">
+                <div class="dashboard-grid">
+                    <div class="glass-panel panel-padding col-4">
+                        <h3>UPI Activation Penetration</h3>
+                        <div class="progress-ring-box m-t-16">
+                            <svg width="80" height="80" class="circle-svg">
+                                <circle cx="40" cy="40" r="34" class="circle-bg"/>
+                                <circle cx="40" cy="40" r="34" class="circle-progress" style="stroke-dasharray: 213; stroke-dashoffset: 42;"/>
+                            </svg>
+                            <div>
+                                <div style="font-size:24px; font-weight:700;">82%</div>
+                                <span class="text-muted">Target Migration Level Met</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="glass-panel panel-padding col-4">
+                        <h3>YONO App Native Engagement</h3>
+                        <div class="progress-ring-box m-t-16">
+                            <svg width="80" height="80" class="circle-svg">
+                                <circle cx="40" cy="40" r="34" class="circle-bg"/>
+                                <circle cx="40" cy="40" r="34" class="circle-progress" style="stroke-dasharray: 213; stroke-dashoffset: 74; stroke-linecap: round; stroke: var(--accent-warning);"/>
+                            </svg>
+                            <div>
+                                <div style="font-size:24px; font-weight:700;">65%</div>
+                                <span class="text-muted">Incremental Jump Registered</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="glass-panel panel-padding col-4">
+                        <h3>AutoPay Mandate Saturation</h3>
+                        <div class="progress-ring-box m-t-16">
+                            <svg width="80" height="80" class="circle-svg">
+                                <circle cx="40" cy="40" r="34" class="circle-bg"/>
+                                <circle cx="40" cy="40" r="34" class="circle-progress" style="stroke-dasharray: 213; stroke-dashoffset: 19; stroke-linecap: round; stroke: var(--accent-success);"/>
+                            </svg>
+                            <div>
+                                <div style="font-size:24px; font-weight:700;">91%</div>
+                                <span class="text-muted">Systemic Risk Protected</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="financial-twin" class="view-section">
+                <div class="dashboard-grid">
+                    <div class="glass-panel panel-padding col-6">
+                        <h3>Simulated Vector Twin Visualization</h3>
+                        <p class="text-muted m-t-16">Autonomous tracking structures compared in real time against national resilience baseline definitions.</p>
+                        <div style="display:flex; justify-content:center; align-items:center; height:280px;">
+                            <svg width="240" height="240" viewBox="0 0 100 100" style="overflow: visible;">
+                                <polygon points="50,5 95,38 78,90 22,90 5,38" fill="none" stroke="var(--border-color)" stroke-width="0.5" />
+                                <polygon points="50,20 80,42 68,80 32,80 20,42" fill="none" stroke="var(--border-color)" stroke-width="0.5" />
+                                <polygon points="50,12 85,35 72,85 28,75 12,45" fill="rgba(0,99,174,0.2)" stroke="var(--accent-glow)" stroke-width="1.5" />
+                                <circle cx="50" cy="12" r="2" fill="var(--accent-glow)"/>
+                                <circle cx="85" cy="35" r="2" fill="var(--accent-glow)"/>
+                                <circle cx="72" cy="85" r="2" fill="var(--accent-glow)"/>
+                                <circle cx="28" cy="75" r="2" fill="var(--accent-glow)"/>
+                                <circle cx="12" cy="45" r="2" fill="var(--accent-glow)"/>
+                                <text x="50" y="-2" text-anchor="middle" font-size="4" fill="var(--text-secondary)">Savings Pool</text>
+                                <text x="98" y="35" text-anchor="start" font-size="4" fill="var(--text-secondary)">Wealth Vectors</text>
+                                <text x="76" y="94" text-anchor="start" font-size="4" fill="var(--text-secondary)">Emergency Vault</text>
+                                <text x="24" y="94" text-anchor="end" font-size="4" fill="var(--text-secondary)">Debt Levers</text>
+                                <text x="2" y="45" text-anchor="end" font-size="4" fill="var(--text-secondary)">Insurance Asset</text>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="glass-panel panel-padding col-6">
+                        <h3>Ecosystem Health Pillars</h3>
+                        <div style="display:flex; flex-direction:column; gap:16px;" class="m-t-16">
+                            <div class="flex-between"><span>Liquid Savings Pool</span><strong>₹4,82,900.00</strong></div>
+                            <div class="flex-between"><span>Active Long Term Investments</span><strong>₹12,40,000.00</strong></div>
+                            <div class="flex-between"><span>Micro-Insurance Term Shield</span><strong>Cover Active (₹5L)</strong></div>
+                            <div class="flex-between"><span>Debt Optimization Vector</span><strong>0.22 Debt/Equity</strong></div>
+                            <div class="flex-between"><span>Emergency Backup Runway</span><strong>6 Months Protected</strong></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="explainable-ai" class="view-section">
+                <div class="dashboard-grid">
+                    <div class="glass-panel panel-padding col-12">
+                        <h3>Model Decision Trace Transparency Log</h3>
+                        <p class="text-muted m-t-16" style="margin-bottom: 24px;">Every mathematical automated action matches traceable programmatic weights to guarantee zero black-box operational drift.</p>
+                        
+                        <table style="width:100%; border-collapse:collapse; text-align:left; font-size:13px;">
+                            <thead>
+                                <tr style="border-bottom:1px solid var(--border-color); color:var(--text-secondary);">
+                                    <th style="padding:12px;">Trigger Classification</th>
+                                    <th style="padding:12px;">Underlying Ingested Factors</th>
+                                    <th style="padding:12px;">Confidence Rating</th>
+                                    <th style="padding:12px;">Projected Core Impact</th>
+                                    <th style="padding:12px;">Assessed Risk Matrix</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr style="border-bottom:1px solid var(--border-color);">
+                                    <td style="padding:12px; font-weight:600;">Automated SIP Strategy Switch</td>
+                                    <td style="padding:12px;">EMI complete, cash surplus generated: +₹25,000/mo.</td>
+                                    <td style="padding:12px; color:var(--accent-success); font-weight:bold;">98.4% Confidence</td>
+                                    <td style="padding:12px;">Long-term yield growth potential: +₹4.2L across 5 years.</td>
+                                    <td style="padding:12px;"><span class="badge-pill badge-success">Minimal Risk</span></td>
+                                </tr>
+                                <tr style="border-bottom:1px solid var(--border-color);">
+                                    <td style="padding:12px; font-weight:600;">Localized Agri-Credit Extension</td>
+                                    <td style="padding:12px;">Monsoon rainfall forecast matching registry verification.</td>
+                                    <td style="padding:12px; color:var(--accent-success); font-weight:bold;">95.1% Confidence</td>
+                                    <td style="padding:12px;">Crop yield maximization window secured.</td>
+                                    <td style="padding:12px;"><span class="badge-pill badge-warning">Moderate Risk Range</span></td>
+                                </tr>
+                                <tr style="border-bottom:1px solid var(--border-color);">
+                                    <td style="padding:12px; font-weight:600;">Gold Loan Balance Sweeping</td>
+                                    <td style="padding:12px;">Overdraft processing threshold breached under clear baseline limits.</td>
+                                    <td style="padding:12px; color:var(--accent-success); font-weight:bold;">99.2% Confidence</td>
+                                    <td style="padding:12px;">Interest drag reduced dynamically by 340 bps.</td>
+                                    <td style="padding:12px;"><span class="badge-pill badge-success">Zero Risk Flag</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <section id="trust-compliance" class="view-section">
+                <div class="dashboard-grid">
+                    <div class="glass-panel panel-padding col-6">
+                        <h3>RBI Data Sovereignty Mapping</h3>
+                        <p class="text-muted m-t-16">All processing execution paths strictly locked within designated local domestic clouds via localized sandbox guardrails.</p>
+                        <div class="m-t-16" style="padding:16px; background:rgba(16,185,129,0.05); border:1px solid rgba(16,185,129,0.2); border-radius:8px;">
+                            <strong>Local Storage Lock State:</strong> Validated. 100% On-Soil Node Ingestion Compliance Verified.
+                        </div>
+                    </div>
+                    <div class="glass-panel panel-padding col-6">
+                        <h3>Systemic Fraud Attack Mitigation</h3>
+                        <p class="text-muted m-t-16">Proactively screening transaction payloads via behavioral anomaly tracking engines.</p>
+                        <div class="m-t-16" style="padding:16px; background:rgba(59,130,246,0.05); border:1px solid rgba(59,130,246,0.2); border-radius:8px;">
+                            <strong>Active Safeguard:</strong> Zero unauthorized script requests allowed across the payment network.
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="executive-dashboard" class="view-section">
+                <div class="dashboard-grid">
+                    <div class="glass-panel panel-padding col-4">
+                        <span class="text-muted">Aggregate Revenue Growth</span>
+                        <div class="metric-value">+24.8%</div>
+                        <span class="text-muted">Generated via hyper-targeted real-time portfolio optimization cross-selling.</span>
+                    </div>
+                    <div class="glass-panel panel-padding col-4">
+                        <span class="text-muted">Customer Loyalty Retention</span>
+                        <div class="metric-value">99.12%</div>
+                        <span class="text-muted">Driven by deep event-driven proactive digital advisory touches.</span>
+                    </div>
+                    <div class="glass-panel panel-padding col-4">
+                        <span class="text-muted">Cross-Sell Realization Curve</span>
+                        <div class="metric-value">4.2x</div>
+                        <span class="text-muted">Autonomous recommendations accepted over traditional manual banking sales frameworks.</span>
+                    </div>
+                    <div class="glass-panel panel-padding col-6">
+                        <span class="text-muted">Digital Adoption Penetration Scale</span>
+                        <div class="metric-value">+38%</div>
+                        <span class="text-muted">Successful movement of rural cohorts to independent self-service banking options.</span>
+                    </div>
+                    <div class="glass-panel panel-padding col-6">
+                        <span class="text-muted">Operational Cost Efficiency ROI</span>
+                        <div class="metric-value">11.4x</div>
+                        <span class="text-muted">Projected operational return calculated across massive 500 million core customer profiles.</span>
+                    </div>
+                </div>
+            </section>
+
+            <section id="future-vision" class="view-section">
+                <div class="dashboard-grid">
+                    <div class="glass-panel panel-padding col-12" style="background: linear-gradient(135deg, rgba(0,99,174,0.1) 0%, rgba(217,70,239,0.05) 100%);">
+                        <h2 style="font-size:32px;">The National Infrastructure Vision</h2>
+                        <p class="text-muted m-t-16" style="line-height:1.8; font-size:15px;">YONO Sahayak is not built as an isolated conversational wrapper. It represents an overhaul of scalable national finance architectures. By taking deep structural data transformations—like salary adjustments, micro-commercial business expansions, or localized regional yield variations—and resolving them directly at the absolute point of need via autonomous, highly secure agentic networks, we remove standard frictions completely.</p>
+                        <p class="text-muted m-t-16" style="line-height:1.8; font-size:15px;">This structure enables the State Bank of India to position itself at the center of automated economic progression. True inclusion requires a platform that understands dialect, analyzes contextual risk instantly, and provides explainable, safe pathways for every citizen. YONO Sahayak delivers exactly that template, ready for immediate integration with core banking infrastructures.</p>
+                        
+                        <div style="display:flex; gap:24px; margin-top:32px;">
+                            <div>
+                                <div style="font-size:24px; font-weight:800; color:var(--accent-glow);">500M+</div>
+                                <span class="text-muted" style="font-size:12px;">Active Citizen Core Ready</span>
+                            </div>
+                            <div>
+                                <div style="font-size:24px; font-weight:800; color:var(--accent-success);">100%</div>
+                                <span class="text-muted" style="font-size:12px;">Autonomous Data Lineage Sovereign</span>
+                            </div>
+                            <div>
+                                <div style="font-size:24px; font-weight:800; color:var(--accent-warning);">Sub-10ms</div>
+                                <span class="text-muted" style="font-size:12px;">Agent Telemetry Decision Velocity</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <script>
+        // Global Navigation Controls
+        function switchView(viewId, element) {
+            document.querySelectorAll('.view-section').forEach(sec => sec.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+            
+            const targetView = document.getElementById(viewId);
+            if(targetView) {
+                targetView.classList.add('active');
+            }
+            if(element) {
+                element.classList.add('active');
+            }
+            
+            // Format dynamic contextual breadcrumbs
+            const labelText = element ? element.querySelector('span').innerText : "Workspace Overview";
+            document.getElementById('view-title-breadcrumb').innerText = labelText;
+
+            // Trigger conditional render canvas setups on visibility change
+            if(viewId === 'agent-network') {
+                setTimeout(initializeNetworkFabricCanvas, 50);
+            }
+            if(viewId === 'voice-banking') {
+                setTimeout(initializeVoiceOscilloscope, 50);
+            }
+        }
+
+        // System Dark/Light Formatting Engine
+        function setTheme(mode) {
+            if(mode === 'dark') {
+                document.documentElement.classList.add('dark');
+                document.documentElement.classList.remove('light');
+            } else {
+                document.documentElement.classList.remove('dark');
+                document.documentElement.classList.add('light');
+            }
+        }
+
+        // Live AI Kernel Feed Log Telemetry Simulation Data Source
+        const sampleLogs = [
+            "EMI Closure Segment Detected -> Analyzing capital allocation...",
+            "Financial Opportunity Optimization Created for Target Account Context.",
+            "Trust Verification Protocols Complete via Sovereign Cloud Layer.",
+            "SIP Strategy Recommendation Vector generated with 98.4% Confidence.",
+            "Customer Context Accepted Proposed Action Plan via localized Dialect Channel.",
+            "Jan Dhan cluster demographic parsing sequence started...",
+            "Micro-credit expansion threshold authorized under RBI sandbox rules.",
+            "Vector twin variance match verified inside target parameters."
+        ];
+
+        function runLiveKernelTicker() {
+            const container = document.getElementById('kernel-live-feed-target');
+            if(container) {
+                const now = new Date();
+                const timeString = now.toTimeString().split(' ')[0].substring(0, 5);
+                const randomMsg = sampleLogs[Math.floor(Math.random() * sampleLogs.length)];
+                
+                const entry = document.createElement('div');
+                entry.className = 'feed-entry';
+                entry.innerHTML = `<span style="color:var(--accent-glow); font-weight:bold;">[${timeString}]</span> ${randomMsg}`;
+                
+                container.insertBefore(entry, container.firstChild);
+                if(container.childNodes.length > 30) {
+                    container.removeChild(container.lastChild);
+                }
+            }
+            setTimeout(runLiveKernelTicker, 2200 + Math.random() * 1500);
+        }
+
+        // Screen 3: Agent Collaboration Network Animation Layer
+        let networkAnimationId = null;
+        function initializeNetworkFabricCanvas() {
+            const canvas = document.getElementById('network-pipeline-canvas');
+            if(!canvas) return;
+            const ctx = canvas.getContext('2d');
+            
+            function resizeCanvas() {
+                const rect = canvas.parentElement.getBoundingClientRect();
+                canvas.width = rect.width;
+                canvas.height = rect.height;
+            }
+            resizeCanvas();
+
+            const nodes = [
+                { id: 'node-life-evt', element: document.getElementById('node-life-evt') },
+                { id: 'node-decision-eng', element: document.getElementById('node-decision-eng') },
+                { id: 'node-trust-agt', element: document.getElementById('node-trust-agt') },
+                { id: 'node-adopt-agt', element: document.getElementById('node-adopt-agt') },
+                { id: 'node-cust-endpoint', element: document.getElementById('node-cust-endpoint') }
+            ];
+
+            let flowParticleOffset = 0;
+            const telemetryLogTarget = document.getElementById('network-live-telemetry-status');
+
+            function animate() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                
+                // Extract clean coordinate data structures directly from the responsive DOM elements
+                const positions = {};
+                const parentRect = canvas.parentElement.getBoundingClientRect();
+
+                nodes.forEach(n => {
+                    if(n.element) {
+                        const r = n.element.getBoundingClientRect();
+                        positions[n.id] = {
+                            x: (r.left - parentRect.left) + r.width / 2,
+                            y: (r.top - parentRect.top) + r.height / 2
+                        };
+                    }
+                });
+
+                // Structured flowchart tracking logic requested by client rule
+                const sequence = [
+                    ['node-life-evt', 'node-decision-eng', 'Processing Core Life Milestone Trigger Event'],
+                    ['node-decision-eng', 'node-trust-agt', 'Evaluating Integrity Constraints & Asset Safeguards'],
+                    ['node-trust-agt', 'node-adopt-agt', 'Compiling Optimal Localized Vernacular Deployment Channel'],
+                    ['node-adopt-agt', 'node-cust-endpoint', 'Routing Approved Micro-Advisory Payload directly to Client Hub']
+                ];
+
+                flowParticleOffset += 0.8;
+                if(flowParticleOffset > 100) flowParticleOffset = 0;
+
+                // Pick an active tracking status context message to render based on loop cycle counters
+                const activeIndex = Math.floor((flowParticleOffset / 100) * sequence.length);
+                if(telemetryLogTarget && sequence[activeIndex]) {
+                    telemetryLogTarget.innerText = sequence[activeIndex][2];
+                }
+
+                sequence.forEach(([from, to]) => {
+                    const p1 = positions[from];
+                    const p2 = positions[to];
+                    if(p1 && p2) {
+                        // Draw pipeline background link track
+                        ctx.beginPath();
+                        ctx.moveTo(p1.x, p1.y);
+                        ctx.lineTo(p2.x, p2.y);
+                        ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--border-color').trim() || 'rgba(255,255,255,0.1)';
+                        ctx.lineWidth = 2;
+                        ctx.stroke();
+
+                        // Render animated data telemetry packets traveling down the canvas wire pipelines
+                        ctx.beginPath();
+                        ctx.moveTo(p1.x, p1.y);
+                        const dx = p2.x - p1.x;
+                        const dy = p2.y - p1.y;
+                        
+                        // Local segment offset scaling metrics
+                        let pPct = (flowParticleOffset % 25) / 25;
+                        ctx.arc(p1.x + dx * pPct, p1.y + dy * pPct, 4, 0, Math.PI * 2);
+                        ctx.fillStyle = '#3b82f6';
+                        ctx.shadowBlur = 10;
+                        ctx.shadowColor = '#3b82f6';
+                        ctx.fill();
+                        ctx.shadowBlur = 0; // reset
+                    }
+                });
+
+                networkAnimationId = requestAnimationFrame(animate);
+            }
+
+            if(networkAnimationId) cancelAnimationFrame(networkAnimationId);
+            animate();
+        }
+
+        // Screen 5: Voice Oscilloscope Interface Animation Engine
+        let voiceAnimationId = null;
+        function initializeVoiceOscilloscope() {
+            const canvas = document.getElementById('voice-oscilloscope-canvas');
+            if(!canvas) return;
+            const ctx = canvas.getContext('2d');
+            
+            canvas.width = canvas.parentElement.clientWidth;
+            canvas.height = canvas.parentElement.clientHeight;
+
+            let phase = 0;
+            function drawWave() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.beginPath();
+                ctx.strokeStyle = '#0063ae';
+                ctx.lineWidth = 3;
+                
+                phase += 0.08;
+                const width = canvas.width;
+                const height = canvas.height;
+                const mid = height / 2;
+
+                for(let x = 0; x < width; x++) {
+                    const cycle = (x / width) * Math.PI * 4;
+                    const y = mid + Math.sin(cycle + phase) * 20 * Math.sin(x / width * Math.PI);
+                    if(x === 0) ctx.moveTo(x, y);
+                    else ctx.lineTo(x, y);
+                }
+                ctx.stroke();
+                voiceAnimationId = requestAnimationFrame(drawWave);
+            }
+            if(voiceAnimationId) cancelAnimationFrame(voiceAnimationId);
+            drawWave();
+        }
+
+        // System Initialization Trigger Routines
+        window.addEventListener('DOMContentLoaded', () => {
+            runLiveKernelTicker();
+            
+            // Explicitly force setup processing on view visibility resize triggers
+            window.addEventListener('resize', () => {
+                const networkActive = document.getElementById('agent-network').classList.contains('active');
+                if(networkActive) initializeNetworkFabricCanvas();
+            });
+        });
+    </script>
+</body>
+</html>
